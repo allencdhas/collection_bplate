@@ -1,6 +1,6 @@
 // data_fetcher.dart
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:collection_bplate/Models/dish_model.dart';
+import '../Models/dish_model.dart';
 
 class DataFetcher {
   static const supabaseUrl = 'https://hamsxoqqbswiataxemfo.supabase.co';
@@ -17,9 +17,9 @@ class DataFetcher {
   static Future<List<Dish>> fetchDishesFromSupabase() async {
     final response = await Supabase.instance.client
         .from('dishes')
-        .select('id, name, category, price, image_url');
+        .select('id, name, category, price, image_url, variations')
+        .order('category');
 
-    print(response);
-    return response.map((dish) => Dish.fromJson(dish)).toList();
+    return response.map((item) => Dish.fromJson(item)).toList();
   }
 }
