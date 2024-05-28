@@ -1,4 +1,3 @@
-// dish_detail_page.dart
 import 'package:flutter/material.dart';
 import './Models/dish_model.dart';
 import './Models/cart_model.dart';
@@ -6,7 +5,7 @@ import './Models/cart_model.dart';
 class DishDetailPage extends StatefulWidget {
   final Dish dish;
 
-  const DishDetailPage({Key? key, required this.dish}) : super(key: key);
+  const DishDetailPage({super.key, required this.dish});
 
   @override
   _DishDetailPageState createState() => _DishDetailPageState();
@@ -35,8 +34,10 @@ class _DishDetailPageState extends State<DishDetailPage> {
     Cart.addItem(dishToAdd);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-          content: Text(
-              '${selectedDish.name} with ${selectedVariation ?? ''} added to cart')),
+        content: Text(
+          '${selectedDish.name} with ${selectedVariation ?? ''} added to cart',
+        ),
+      ),
     );
   }
 
@@ -52,63 +53,86 @@ class _DishDetailPageState extends State<DishDetailPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Image.network(
-              dish.imageUrl,
-              height: 300,
-              width: double.infinity,
-              fit: BoxFit.cover,
+            Center(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16.0),
+                child: Image.network(
+                  dish.imageUrl,
+                  height: 300,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                ),
+              ),
             ),
             const SizedBox(height: 16),
             Text(
               dish.name,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              'Category: ${dish.category}',
-              style: TextStyle(fontSize: 18),
+              dish.category,
+              style: const TextStyle(fontSize: 18),
             ),
             const SizedBox(height: 8),
             Text(
               '\$${dish.price}',
-              style: TextStyle(fontSize: 18, color: Colors.green),
+              style: const TextStyle(fontSize: 18, color: Colors.green),
             ),
             const SizedBox(height: 16),
-            Text(
+            const Text(
               'Description of the dish can go here.',
               style: TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 16),
             if (dish.variations.isNotEmpty) ...[
-              Text(
+              const Text(
                 'Variations:',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
-              for (var variation in dish.variations) ...[
-                ListTile(
-                  title: Text(variation.name),
-                  trailing:
-                      Text('\$${variation.extraPrice.toStringAsFixed(2)}'),
-                  leading: Radio<String>(
-                    value: variation.name,
-                    groupValue: selectedVariation,
-                    onChanged: (value) {
+              Wrap(
+                spacing: 8.0,
+                children: dish.variations.map((variation) {
+                  final isSelected = selectedVariation == variation.name;
+                  return ChoiceChip(
+                    label: Text(variation.name),
+                    selected: isSelected,
+                    onSelected: (selected) {
                       setState(() {
-                        selectedVariation = value;
+                        selectedVariation = selected ? variation.name : null;
                       });
                     },
-                  ),
-                ),
-              ],
+                    selectedColor: Colors.orange,
+                    backgroundColor: Colors.grey[200],
+                    labelStyle: TextStyle(
+                      color: isSelected ? Colors.white : Colors.black,
+                    ),
+                  );
+                }).toList(),
+              ),
             ],
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _addToCart,
-              child: Text('Add to Cart'),
+            SizedBox(
+              width: 150, // Make button full-width
+              child: ElevatedButton(
+                onPressed: _addToCart,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor:
+                      Colors.orange, // Set the button color to orange
+                  padding: const EdgeInsets.symmetric(vertical: 13.0),
+                ),
+                child: const Text(
+                  'Add to Cart',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
             ),
           ],
         ),

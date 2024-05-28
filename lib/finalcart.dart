@@ -1,10 +1,9 @@
-// cart_page.dart
 import 'package:flutter/material.dart';
 import './Models/cart_model.dart';
 import 'Models/dish_model.dart';
 
 class CartPage extends StatefulWidget {
-  const CartPage({super.key});
+  const CartPage({Key? key}) : super(key: key);
 
   @override
   _CartPageState createState() => _CartPageState();
@@ -32,19 +31,30 @@ class _CartPageState extends State<CartPage> {
       appBar: AppBar(
         title: const Text('Cart'),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: items.isNotEmpty
-                ? ListView.builder(
-                    itemCount: items.length,
-                    itemBuilder: (context, index) {
-                      return ListTile(
-                        leading: Image.network(
-                          items[index].imageUrl,
-                          width: 50,
-                          height: 50,
-                          fit: BoxFit.cover,
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            Expanded(
+              child: ListView.builder(
+                itemCount: items.length,
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16.0),
+                        border: Border.all(color: Colors.grey),
+                      ),
+                      child: ListTile(
+                        leading: ClipRRect(
+                          borderRadius: BorderRadius.circular(8.0),
+                          child: Image.network(
+                            items[index].imageUrl,
+                            width: 50,
+                            height: 50,
+                            fit: BoxFit.cover,
+                          ),
                         ),
                         title: Text(items[index].name),
                         subtitle: Text('\$${items[index].price}'),
@@ -52,22 +62,27 @@ class _CartPageState extends State<CartPage> {
                           icon: const Icon(Icons.remove_circle),
                           onPressed: () => _removeItem(items[index]),
                         ),
-                      );
-                    },
-                  )
-                : const Center(
-                    child: Text('No items in the cart'),
-                  ),
-          ),
-          if (items.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: ElevatedButton(
-                onPressed: _checkout,
-                child: const Text('Checkout'),
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
-        ],
+            if (items.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: ElevatedButton(
+                  onPressed: _checkout,
+                  child: const Text('Checkout'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange,
+                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+                    minimumSize: Size(double.infinity, 0),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
