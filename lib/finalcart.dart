@@ -27,6 +27,12 @@ class _CartPageState extends State<CartPage> {
   Widget build(BuildContext context) {
     final items = Cart.items;
 
+    // Calculate total price
+    double totalPrice = 0.0;
+    for (var item in items) {
+      totalPrice += item.price;
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Cart'),
@@ -68,18 +74,28 @@ class _CartPageState extends State<CartPage> {
                 },
               ),
             ),
+            // Show total price and checkout button
             if (items.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: ElevatedButton(
-                  onPressed: _checkout,
-                  child: const Text('Checkout'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
-                    padding: const EdgeInsets.symmetric(vertical: 16.0),
-                    minimumSize: Size(double.infinity, 0),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Total Price: \$${totalPrice.toStringAsFixed(2)}',
+                    style: TextStyle(fontSize: 16),
                   ),
-                ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: ElevatedButton(
+                      onPressed: _checkout,
+                      child: const Text('Checkout'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange,
+                        padding: const EdgeInsets.symmetric(vertical: 16.0),
+                        minimumSize: Size(120, 0),
+                      ),
+                    ),
+                  ),
+                ],
               ),
           ],
         ),

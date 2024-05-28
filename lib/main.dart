@@ -85,10 +85,10 @@ class _LandingPageState extends State<LandingPage> {
             ),
           ],
         ),
-        bottom: PreferredSize(
+        bottom: const PreferredSize(
           preferredSize: Size.fromHeight(1.0),
           child: Divider(
-            color: const Color.fromARGB(0, 158, 158, 158),
+            color: Color.fromARGB(0, 158, 158, 158),
             height: 1.0,
           ),
         ),
@@ -106,7 +106,7 @@ class _LandingPageState extends State<LandingPage> {
               itemCount: filters.length,
               itemBuilder: (context, index) {
                 return Container(
-                  margin: const EdgeInsets.symmetric(vertical: 4.0),
+                  margin: const EdgeInsets.symmetric(vertical: 3.0),
                   decoration: BoxDecoration(
                     color: selectedFilter == filters[index]
                         ? Colors.orange.withOpacity(0.2)
@@ -140,7 +140,7 @@ class _LandingPageState extends State<LandingPage> {
               margin: const EdgeInsets.only(left: 16.0),
               decoration: BoxDecoration(
                 color: const Color.fromARGB(0, 255, 255, 255),
-                border: Border.all(color: Color.fromARGB(255, 193, 149, 122)),
+                border: Border.all(color: Color.fromARGB(0, 193, 149, 122)),
               ),
               child: filteredDishes.isNotEmpty
                   ? ListView.builder(

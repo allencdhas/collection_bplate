@@ -17,7 +17,7 @@ class DataFetcher {
   static Future<List<Dish>> fetchDishesFromSupabase() async {
     final response = await Supabase.instance.client
         .from('dishes')
-        .select('id, name, category, price, image_url, variations')
+        .select('*')
         .order('category');
 
     return response.map((item) => Dish.fromJson(item)).toList();

@@ -5,6 +5,7 @@ class Dish {
   final double price;
   final String imageUrl;
   final List<DishVariation> variations;
+  final String description;
 
   Dish({
     required this.id,
@@ -13,6 +14,7 @@ class Dish {
     required this.price,
     required this.imageUrl,
     required this.variations,
+    required this.description,
   });
 
   factory Dish.fromJson(Map<String, dynamic> json) {
@@ -27,6 +29,7 @@ class Dish {
       price: json['price'].toDouble(),
       imageUrl: json['image_url'],
       variations: variationList,
+      description: json['description'],
     );
   }
 }
