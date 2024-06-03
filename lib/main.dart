@@ -1,200 +1,165 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-import './API/data_fetcher.dart';
 import './Models/dish_model.dart';
-import './dish_detail.dart';
-import 'finalcart.dart';
+import './Models/cart_model.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await DataFetcher.initializeSupabase();
-  runApp(const MyApp());
-}
+class DishDetailPage extends StatefulWidget {
+  final Dish dish;
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const DishDetailPage({Key? key, required this.dish});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Food Delivery',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
+  _DishDetailPageState createState() => _DishDetailPageState();
+}
+
+class _DishDetailPageState extends State<DishDetailPage> {
+  String? selectedVariation;
+  double totalPrice = 0.0;
+
+  void _updateTotalPrice() {
+    setState(() {
+      totalPrice = widget.dish.price +
+          (selectedVariation != null
+              ? widget.dish.variations
+                  .firstWhere((v) => v.name == selectedVariation!)
+                  .extraPrice
+              : 0.0);
+    });
+  }
+
+  void _addToCart() {
+    final selectedDish = widget.dish;
+    final extraPrice = selectedVariation != null
+        ? widget.dish.variations
+            .firstWhere((v) => v.name == selectedVariation!)
+            .extraPrice
+        : 0.0;
+
+    final dishToAdd = Dish(
+      id: selectedDish.id,
+      name: selectedDish.name,
+      category: selectedDish.category,
+      price: selectedDish.price + extraPrice,
+      imageUrl: selectedDish.imageUrl,
+      variations: selectedDish.variations,
+      description: selectedDish.description,
+    );
+
+    Cart.addItem(dishToAdd);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          '${selectedDish.name} with ${selectedVariation ?? ''} added to cart',
+        ),
       ),
-      home: const LandingPage(),
     );
   }
-}
-
-class LandingPage extends StatefulWidget {
-  const LandingPage({super.key});
-
-  @override
-  _LandingPageState createState() => _LandingPageState();
-}
-
-class _LandingPageState extends State<LandingPage> {
-  List<String> filters = [];
-  List<Dish> dishes = [];
-  String selectedFilter = 'Rice Bowls';
-  List<Dish> filteredDishes = [];
 
   @override
   void initState() {
     super.initState();
-    fetchData();
-  }
-
-  Future<void> fetchData() async {
-    List<Dish> fetchedDishes = await DataFetcher.fetchDishesFromSupabase();
-    print("Fetched dishes: $fetchedDishes");
-    setState(() {
-      dishes = fetchedDishes;
-      filters = dishes.map((dish) => dish.category).toSet().toList();
-      print("Filters: $filters");
-      filterDishes(selectedFilter);
-    });
-  }
-
-  void filterDishes(String filterValue) {
-    print("Filtering dishes with category: $filterValue");
-    setState(() {
-      selectedFilter = filterValue;
-      filteredDishes =
-          dishes.where((dish) => dish.category == filterValue).toList();
-      print("Filtered dishes: $filteredDishes");
-    });
+    _updateTotalPrice();
   }
 
   @override
   Widget build(BuildContext context) {
+    final dish = widget.dish;
     return Scaffold(
       appBar: AppBar(
-        title: Row(
-          children: [
-            Text('Welcome, Allen'),
-            Spacer(),
-            IconButton(
-              icon: Icon(Icons.shopping_cart),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => CartPage()),
-                );
-              },
-            ),
-          ],
-        ),
-        bottom: const PreferredSize(
-          preferredSize: Size.fromHeight(1.0),
-          child: Divider(
-            color: Color.fromARGB(0, 158, 158, 158),
-            height: 1.0,
-          ),
-        ),
+        title: Text(dish.name),
       ),
-      body: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(width: 16),
-          Container(
-            width: 137,
-            decoration: BoxDecoration(
-              color: const Color.fromARGB(0, 255, 255, 255),
-            ),
-            child: ListView.builder(
-              itemCount: filters.length,
-              itemBuilder: (context, index) {
-                return Container(
-                  margin: const EdgeInsets.symmetric(vertical: 3.0),
-                  decoration: BoxDecoration(
-                    color: selectedFilter == filters[index]
-                        ? Colors.orange.withOpacity(0.2)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(10.0),
-                    border: Border.all(
-                      color: selectedFilter == filters[index]
-                          ? Colors.orange
-                          : Colors.transparent,
-                    ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16.0),
+                  child: Image.network(
+                    dish.imageUrl,
+                    height: 300,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
                   ),
-                  child: ListTile(
-                    title: Center(
-                      child: Text(
-                        filters[index],
-                        style: TextStyle(
-                            color: selectedFilter == filters[index]
-                                ? Colors.orange
-                                : Colors.black,
-                            fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    onTap: () => filterDishes(filters[index]),
-                  ),
-                );
-              },
-            ),
-          ),
-          Expanded(
-            child: Container(
-              margin: const EdgeInsets.only(left: 16.0),
-              decoration: BoxDecoration(
-                color: const Color.fromARGB(0, 255, 255, 255),
-                border: Border.all(color: Color.fromARGB(0, 193, 149, 122)),
+                ),
               ),
-              child: filteredDishes.isNotEmpty
-                  ? ListView.builder(
-                      itemCount: filteredDishes.length,
-                      itemBuilder: (context, index) {
-                        return GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    DishDetailPage(dish: filteredDishes[index]),
-                              ),
-                            );
-                          },
-                          child: Card(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10.0),
-                            ),
-                            child: Column(
-                              children: [
-                                ClipRRect(
-                                  borderRadius: const BorderRadius.vertical(
-                                    top: Radius.circular(10.0),
-                                  ),
-                                  child: Image.network(
-                                    filteredDishes[index].imageUrl,
-                                    height: 150,
-                                    width: double.infinity,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  filteredDishes[index].name,
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                Text('\$${filteredDishes[index].price}'),
-                                const SizedBox(height: 8),
-                              ],
-                            ),
-                          ),
-                        );
+              const SizedBox(height: 16),
+              Text(
+                dish.name,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                dish.category,
+                style: const TextStyle(fontSize: 18),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '\$$totalPrice', // Display total price
+                style: const TextStyle(fontSize: 18, color: Colors.green),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                dish.description,
+                style: TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 16),
+              if (dish.variations.isNotEmpty) ...[
+                const Text(
+                  'Choose Type',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8.0,
+                  children: dish.variations.map((variation) {
+                    final isSelected = selectedVariation == variation.name;
+                    return ChoiceChip(
+                      label: Text(
+                        '${variation.name} \$${variation.extraPrice.toStringAsFixed(2)}', // Display name and price
+                      ),
+                      selected: isSelected,
+                      onSelected: (selected) {
+                        setState(() {
+                          selectedVariation = selected ? variation.name : null;
+                          _updateTotalPrice(); // Update total price when variation changes
+                        });
                       },
-                    )
-                  : Center(
-                      child: Text('No dishes found for this category'),
+                      selectedColor: Colors.orange,
+                      backgroundColor: Colors.grey[200],
+                      labelStyle: TextStyle(
+                        color: isSelected ? Colors.white : Colors.black,
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ],
+              const SizedBox(height: 16),
+              SizedBox(
+                width: 150, // Make button full-width
+                child: ElevatedButton(
+                  onPressed: _addToCart,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:
+                        Colors.orange, // Set the button color to orange
+                    padding: const EdgeInsets.symmetric(vertical: 13.0),
+                  ),
+                  child: const Text(
+                    'Add to Cart',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
                     ),
-            ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
